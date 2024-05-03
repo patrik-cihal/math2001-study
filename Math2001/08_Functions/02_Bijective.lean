@@ -127,8 +127,18 @@ example : ∀ f : Celestial → Celestial, Injective f → Bijective f := by
       apply h_sun
     · use moon
       apply h_moon
-  | moon, sun => sorry
-  | moon, moon => sorry
+  | moon, sun =>
+    intro y
+    cases y
+    use moon
+    exact h_moon
+    use sun
+    exact h_sun
+  | moon, moon =>
+    dsimp[Injective] at hf
+    have hf2 : f sun = f moon := by rw[h_sun, h_moon]
+    have hc := hf hf2
+    contradiction
 
 
 example : ¬ ∀ f : ℕ → ℕ, Injective f → Bijective f := by
@@ -154,17 +164,33 @@ example : ¬ ∀ f : ℕ → ℕ, Injective f → Bijective f := by
 
 
 example : Bijective (fun (x : ℝ) ↦ 4 - 3 * x) := by
-  sorry
+  constructor
+  .
+    dsimp[Injective]
+    intro x1 x2 hf
+    have hf2 : -3*x1 = -3*x2 := by addarith[hf]
+    cancel (-3) at hf2
+  .
+    intro y
+    use (4-y)/3
+    ring
 
 example : ¬ Bijective (fun (x : ℝ) ↦ 4 - 3 * x) := by
   sorry
-
 
 example : Bijective (fun (x : ℝ) ↦ x ^ 2 + 2 * x) := by
   sorry
 
 example : ¬ Bijective (fun (x : ℝ) ↦ x ^ 2 + 2 * x) := by
-  sorry
+  dsimp[Bijective]
+  push_neg
+  left
+  dsimp[Injective]
+  push_neg
+  use 0, -2
+  constructor
+  ring
+  numbers
 
 inductive Element
   | fire

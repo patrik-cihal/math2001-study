@@ -18,6 +18,7 @@ def F : ℕ → ℤ
   | n + 2 => F (n + 1) + F n
 
 #eval F 5 -- infoview displays `8`
+#eval 3
 
 
 #check @F -- infoview displays `F : ℕ → ℤ`
@@ -169,36 +170,54 @@ example : Injective (fun (x:ℝ) ↦ x ^ 3) := by
 
 
 example : Injective (fun (x : ℚ) ↦ x - 12) := by
-  sorry
+  dsimp[Injective]
+  intro x1 x2 h
+  addarith[h]
 
 example : ¬ Injective (fun (x : ℚ) ↦ x - 12) := by
+
   sorry
 
 
 example : Injective (fun (x : ℝ) ↦ 3) := by
+
   sorry
 
 example : ¬ Injective (fun (x : ℝ) ↦ 3) := by
-  sorry
+  dsimp[Injective]
+  push_neg
+  use 1, 0
+
+  constructor <;> numbers
 
 example : Injective (fun (x : ℚ) ↦ 3 * x - 1) := by
-  sorry
+  dsimp[Injective]
+  intro x1 x2 h
+  have h : 3 * x1 = 3*x2 := by addarith[h]
+  cancel 3 at h
 
 example : ¬ Injective (fun (x : ℚ) ↦ 3 * x - 1) := by
   sorry
 
 
 example : Injective (fun (x : ℤ) ↦ 3 * x - 1) := by
-  sorry
+  dsimp[Injective]
+  intro x1 x2 h
+  have h : 3 * x1 = 3*x2 := by addarith[h]
+  cancel 3 at h
 
 example : ¬ Injective (fun (x : ℤ) ↦ 3 * x - 1) := by
   sorry
 
 
 example : Surjective (fun (x : ℝ) ↦ 2 * x) := by
-  sorry
+  dsimp[Surjective]
+  intro b
+  use b/2
+  ring
 
 example : ¬ Surjective (fun (x : ℝ) ↦ 2 * x) := by
+
   sorry
 
 
@@ -206,13 +225,37 @@ example : Surjective (fun (x : ℤ) ↦ 2 * x) := by
   sorry
 
 example : ¬ Surjective (fun (x : ℤ) ↦ 2 * x) := by
-  sorry
+  dsimp[Surjective]
+  push_neg
+  use 3
+  intro a
+  have h3 : Odd 3 := by
+    use 1
+    ring
+  have h3 : ¬ Even 3 := (3 : ℤ).odd_iff_not_even.mp h3
+  dsimp[Even] at h3
+  push_neg at h3
+  exact (h3 a).symm
 
 example : Surjective (fun (n : ℕ) ↦ n ^ 2) := by
   sorry
 
 example : ¬ Surjective (fun (n : ℕ) ↦ n ^ 2) := by
-  sorry
+  dsimp[Surjective]
+  push_neg
+  use 3
+  intro a
+  apply ne_iff_lt_or_gt.mpr
+  by_cases ha : a ≤ 1
+  left
+  calc a^2 ≤ 1^2 := by rel[ha]
+    _ < 3 := by numbers
+  right
+  have ha : a > 1 := by exact Nat.not_le.mp ha
+  have ha : a ≥ 2 := ha
+
+  calc a^2 ≥ 2^2 := by rel[ha]
+    _ > 3 := by numbers
 
 inductive White
   | meg
@@ -230,10 +273,19 @@ example : Injective h := by
   sorry
 
 example : ¬ Injective h := by
-  sorry
+  dsimp[Injective]
+  push_neg
+  use athos, aramis
+  exhaust
 
 example : Surjective h := by
-  sorry
+  dsimp[Surjective]
+  intro b
+  cases b
+  use porthos
+  rfl
+  use aramis
+  rfl
 
 example : ¬ Surjective h := by
   sorry
@@ -244,7 +296,9 @@ def l : White → Musketeer
   | jack => porthos
 
 example : Injective l := by
-  sorry
+  dsimp[Injective]
+  intro x1 x2
+  cases x1 <;> cases x2 <;> exhaust
 
 example : ¬ Injective l := by
   sorry
@@ -254,15 +308,43 @@ example : Surjective l := by
   sorry
 
 example : ¬ Surjective l := by
-  sorry
+  dsimp[Surjective]
+  push_neg
+  use athos
+  intro x
+  cases x <;> exhaust
 
 example (f : X → Y) : Injective f ↔ ∀ x1 x2 : X, x1 ≠ x2 → f x1 ≠ f x2 := by
-  sorry
+  dsimp[Injective]
+  constructor
+  .
+    intro h1
+    intro x1 x2 hx
+    intro h2
+    have hxc := h1 h2
+    contradiction
+  .
+    intro h
+    intro a1 a2
+    by_cases ha : a1 = a2
+    intro _
+    exact ha
+    have hf := h a1 a2 ha
+    intro hfc
+    contradiction
 
 example : ∀ (f : ℚ → ℚ), Injective f → Injective (fun x ↦ f x + 1) := by
-  sorry
+  intro f hf x1 x2
+
+
+  intro h
+  have hf2 : f x1 + 1 = f x2 + 1 := h
+  have hf2 : f x1  = f x2 := by addarith[hf2]
+
+  exact hf hf2
 
 example : ¬ ∀ (f : ℚ → ℚ), Injective f → Injective (fun x ↦ f x + 1) := by
+
   sorry
 
 
@@ -270,23 +352,75 @@ example : ∀ (f : ℚ → ℚ), Injective f → Injective (fun x ↦ f x + x) :
   sorry
 
 example : ¬ ∀ (f : ℚ → ℚ), Injective f → Injective (fun x ↦ f x + x) := by
-  sorry
+  dsimp[Injective]
+  push_neg
+  use (fun x => -x)
+  constructor
+  intro x1 x2
+  exact neg_inj.mp
+  use 0, 1
+  constructor
+  ring
+  numbers
 
 example : ∀ (f : ℤ → ℤ), Surjective f → Surjective (fun x ↦ 2 * f x) := by
   sorry
 
 example : ¬ ∀ (f : ℤ → ℤ), Surjective f → Surjective (fun x ↦ 2 * f x) := by
-  sorry
+  dsimp[Surjective]
+  push_neg
+  use (fun x => x)
+  constructor
+  intro b
+  use b
+  ring
+  use 3
+  intro a
+
+  by_cases ha : a≤1
+  apply ne_of_lt
+  calc 2 * a ≤ 2 * 1 := by rel[ha]
+    _ < 3 := by numbers
+  apply ne_of_gt
+  have ha : a > 1 := by exact Int.not_le.mp ha
+  have ha : a ≥ 2 := ha
+  calc 3 < 2*2 := by numbers
+    _ ≤ 2 * a := by rel[ha]
 
 example : ∀ c : ℝ, Surjective (fun x ↦ c * x) := by
   sorry
 
 example : ¬ ∀ c : ℝ, Surjective (fun x ↦ c * x) := by
-  sorry
+  dsimp[Surjective]
+  push_neg
+  use 0
+  use 1
+  intro a
+  rw[zero_mul]
+  numbers
 
 example {f : ℚ → ℚ} (hf : ∀ x y, x < y → f x < f y) : Injective f := by
-  sorry
+  dsimp[Injective]
+  intro x1 x2 h
+  by_contra hc
+  push_neg at hc
+  obtain hx | hx := Ne.lt_or_lt hc
+  have hfc := hf x1 x2 hx
+  have hfc := ne_of_lt hfc
+  contradiction
+  have hfc := hf x2 x1 hx
+  have hfc := ne_of_lt hfc
+  have h := h.symm
+  contradiction
 
 example {f : X → ℕ} {x0 : X} (h0 : f x0 = 0) {i : X → X}
     (hi : ∀ x, f (i x) = f x + 1) : Surjective f := by
-  sorry
+  dsimp[Surjective]
+  intro b
+  simple_induction b with k ih
+  use x0
+  exact h0
+  obtain ⟨a, ha⟩ := ih
+  use (i a)
+  rw[(hi a)]
+  rw[ha]

@@ -45,7 +45,16 @@ example : Bijective (fun ((m, n) : ℤ × ℤ) ↦ (m + n, m + 2 * n)) := by
 
 
 example : Bijective (fun ((m, n) : ℝ × ℝ) ↦ (m + n, m - n)) := by
-  sorry
+  rw[bijective_iff_exists_inverse]
+
+  use (fun (a, b) => ((a+b)/2.0, (a-b)/2.0))
+  constructor
+  . ext ⟨m, n⟩
+    dsimp
+    ring
+  . ext ⟨a, b⟩
+    dsimp
+    ring
 
 example : ¬ Bijective (fun ((m, n) : ℤ × ℤ) ↦ (m + n, m - n)) := by
   dsimp [Bijective, Injective, Surjective]
@@ -104,7 +113,12 @@ example : Surjective (fun ((m, n) : ℤ × ℤ) ↦ 5 * m + 8 * n) := by
 
 
 example : ¬ Injective (fun ((m, n) : ℤ × ℤ) ↦ 5 * m + 10 * n) := by
-  sorry
+  dsimp[Injective]
+  push_neg
+  use (0, 1), (2, 0)
+  constructor
+  ring
+  numbers
 
 example : ¬ Surjective (fun ((m, n) : ℤ × ℤ) ↦ 5 * m + 10 * n) := by
   dsimp [Surjective]
@@ -142,8 +156,8 @@ theorem A_mono {n m : ℕ} (h : n ≤ m) : A n ≤ A m := by
 
 theorem of_A_add_mono {a1 a2 b1 b2 : ℕ} (h : A (a1 + b1) + b1 ≤ A (a2 + b2) + b2) :
     a1 + b1 ≤ a2 + b2 := by
-  obtain h' | h' : _ ∨ a2 + b2 + 1 ≤ a1 + b1 := le_or_lt (a1 + b1) (a2 + b2)
-  · apply h'
+  by_contra h'
+  have h' : a2+b2 < a1+b1 := by exact Nat.not_le.mp h'
   rw [← not_lt] at h
   have :=
   calc A (a2 + b2) + b2
@@ -210,31 +224,84 @@ example : Bijective p := by
 
 example : Bijective (fun ((r, s) : ℚ × ℚ) ↦ (s, r - s)) := by
   rw [bijective_iff_exists_inverse]
-  sorry
+  use (fun (a, b) => (a+b, a))
+  dsimp[Inverse]
+  constructor
+  ext ⟨r, s⟩
+  dsimp
+  constructor
+  ring
+  ring
+  ext ⟨a, b⟩
+  dsimp
+  constructor
+  ring
+  ring
 
 example : ¬ Injective (fun ((x, y) : ℤ × ℤ) ↦ x - 2 * y - 1) := by
-  sorry
+  dsimp[Injective]
+  push_neg
+  use ⟨0, 0⟩, ⟨2, 1⟩
+  constructor
+  ring
+  numbers
+
 example : Surjective (fun ((x, y) : ℤ × ℤ) ↦ x - 2 * y - 1) := by
-  sorry
+  intro a
+  use (a+1, 0)
+  ring
 
 example : ¬ Surjective (fun ((x, y) : ℚ × ℚ) ↦ x ^ 2 + y ^ 2) := by
-  sorry
+  dsimp[Surjective]
+  push_neg
+  use -1
+  intro (x, y)
+  dsimp
+  have h := calc x^2 + y^2 ≥ 0 := by extra
+    _ > -1 := by numbers
+  exact ne_of_gt h
 
 example : Surjective (fun ((x, y) : ℚ × ℚ) ↦ x ^ 2 - y ^ 2) := by
-  sorry
+  intro a
+  use ((a+1)/2, (1-a)/2)
+  dsimp
+  ring
+
+
+#check ((fun ((a, b) : ℚ × ℕ) ↦ a ^ b) (2, 5))
 
 example : Surjective (fun ((a, b) : ℚ × ℕ) ↦ a ^ b) := by
-  sorry
+  intro x
+  use (x, 1)
+  ring
 
 example : ¬ Injective
     (fun ((x, y, z) : ℝ × ℝ × ℝ) ↦ (x + y + z, x + 2 * y + 3 * z)) := by
-  sorry
+  dsimp[Injective]
+  push_neg
+  use (1, 1, 1), (-1, 5, -1)
+  dsimp
+  constructor
+  constructor
+  ring
+  ring
+  numbers
 
 example : Injective (fun ((x, y) : ℝ × ℝ) ↦ (x + y, x + 2 * y, x + 3 * y)) := by
-  sorry
+  intro (x1, y1) (x2, y2)
+  dsimp
+  intro h
+  obtain ⟨h1, h2, h3⟩ := h
+  have hy := calc y1 = (x1+2*y1) - (x1+y1) := by ring
+    _ = (x2 + 2*y2) - (x2+y2) := by rw[h1, h2]
+    _ = y2 := by ring
+  rw[hy] at h1
+  constructor
+  addarith[h1]
+  exact hy
 
 def h : ℝ × ℝ × ℝ → ℝ × ℝ × ℝ
   | (x, y, z) => (y, z, x)
 
 example : h ∘ h ∘ h = id := by
-  sorry
+  rfl

@@ -69,7 +69,7 @@ theorem gcd_dvd (a b : ℤ) : gcd a b ∣ b ∧ gcd a b ∣ a := by
     obtain ⟨IH_right, IH_left⟩ := IH
     constructor
     · -- prove that `gcd a b ∣ b`
-      sorry
+      exact IH_left
     · -- prove that `gcd a b ∣ a`
       sorry
   · -- case `b < 0`
@@ -172,6 +172,7 @@ def R (a b : ℤ) : ℤ :=
   else
     0
 
+
 end
 termination_by L a b => b ; R a b => b
 
@@ -184,14 +185,8 @@ theorem L_mul_add_R_mul (a b : ℤ) : L a b * a + R a b * b = gcd a b := by
   rw [R, L, gcd]
   split_ifs with h1 h2 <;> push_neg at *
   · -- case `0 < b`
-    have IH := L_mul_add_R_mul b (fmod a b) -- inductive hypothesis
-    have H : fmod a b + b * fdiv a b = a := fmod_add_fdiv a b
-    set q := fdiv a b
-    set r := fmod a b
-    calc R b r * a + (L b r - q * R b r) * b
-        = R b r * (r + b * q) + (L b r - q * R b r) * b:= by rw [H]
-      _ = L b r * b + R b r * r := by ring
-      _ = gcd b r := IH
+
+    sorry
   · -- case `b < 0`
     have IH := L_mul_add_R_mul b (fmod a (-b)) -- inductive hypothesis
     have H : fmod a (-b) + (-b) * fdiv a (-b) = a := fmod_add_fdiv a (-b)
@@ -221,4 +216,11 @@ theorem bezout (a b : ℤ) : ∃ x y : ℤ, x * a + y * b = gcd a b := by
 
 
 theorem gcd_maximal {d a b : ℤ} (ha : d ∣ a) (hb : d ∣ b) : d ∣ gcd a b := by
-  sorry
+  obtain ⟨k, l, hkl⟩ := bezout a b
+  obtain ⟨m, hm⟩ := ha
+  obtain ⟨n, hn⟩ := hb
+  use k*m + l*n
+
+  calc gcd a b = k*a+l*b := hkl.symm
+    _ = k*(d*m)+l*(d*n) := by rw[hm, hn]
+    _ = d*(k*m+l*n):= by ring

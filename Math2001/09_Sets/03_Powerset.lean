@@ -15,7 +15,7 @@ open Set Function
 #check {{3, 4}, {4, 5, 6}} -- `{{3, 4}, {4, 5, 6}} : Set (Set ℕ)`
 #check {s : Set ℕ | 3 ∈ s} -- `{s | 3 ∈ s} : Set (Set ℕ)`
 
-
+#check {s : Set (Set ℕ) | {1, 2, 3} ∈ s}
 
 example : {n : ℕ | Nat.Even n} ∉ {s : Set ℕ | 3 ∈ s} := by
   dsimp
@@ -79,7 +79,20 @@ example : ¬ ∃ f : X → Set X, Surjective f := by
 def r (s : Set ℕ) : Set ℕ := s ∪ {3}
 
 example : ¬ Injective r := by
-  sorry
+  dsimp[Injective]
+  push_neg
+  use ∅, {3}
+  constructor
+  dsimp[r]
+  ext x
+  dsimp
+  exhaust
+  ext
+  push_neg
+  use 3
+  right
+  dsimp
+  exhaust
 
 namespace Int
 
@@ -90,8 +103,33 @@ def U : ℕ → Set ℤ
 example (n : ℕ) : U n = {x : ℤ | (2:ℤ) ^ n ∣ x} := by
   simple_induction n with k hk
   · rw [U]
-    sorry
+    ext x
+    dsimp
+    constructor
+    intro _
+    use x
+    ring
+    exhaust
   · rw [U]
     ext x
     dsimp
-    sorry
+    constructor
+    .
+      intro h
+      obtain ⟨l, hl⟩ := h
+      rw[hk] at hl
+      have ⟨hl1, hl2⟩ := hl
+      obtain⟨m, hm⟩ := hl1
+      use m
+      rw[hl2, hm]
+      ring
+    .
+      intro h
+      obtain ⟨l, hl⟩ := h
+      use 2^k*l
+      constructor
+      rw[hk]
+      use l
+      rfl
+      rw[hl]
+      ring

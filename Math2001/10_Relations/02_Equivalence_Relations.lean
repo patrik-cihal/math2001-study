@@ -168,13 +168,45 @@ section
 local infix:50 "∼" => fun (a b : ℤ) ↦ ∃ m n, m > 0 ∧ n > 0 ∧ a * m = b * n
 
 example : Reflexive (· ∼ ·) := by
-  sorry
+  intro x
+  use 1, 1
+  constructor
+  numbers
+  constructor
+  numbers
+  ring
 
 example : Symmetric (· ∼ ·) := by
-  sorry
+  intro x y
+  intro h
+  dsimp at *
+  obtain ⟨m, n, h⟩ := h
+  use n, m
+  constructor
+  exact h.right.left
+  constructor
+  exact h.left
+  exact h.right.right.symm
 
 example : Transitive (· ∼ ·) := by
-  sorry
+  intro x1 x2 x3
+  intro h1 h2
+  obtain ⟨m, n, h1⟩ := h1
+  obtain ⟨k, l, h2⟩ := h2
+  use m*k, n*l
+  have hm := h1.left
+  have hk := h2.left
+  have hn := h1.right.left
+  have hl := h2.right.left
+  constructor
+  exact Int.mul_pos hm hk
+  constructor
+  exact Int.mul_pos hn hl
+  calc x1*(m*k) = x1*m*k := by ring
+    _ = x2*n*k := by rw[h1.right.right]
+    _ = x2*k*n := by ring
+    _ = x3*l*n := by rw[h2.right.right]
+    _ = x3*(n*l) := by ring
 
 end
 
@@ -183,13 +215,19 @@ section
 local infix:50 "∼" => fun ((a, b) : ℕ × ℕ) (c, d) ↦ a + d = b + c
 
 example : Reflexive (· ∼ ·) := by
-  sorry
+  intro (x, y)
+  ring
 
 example : Symmetric (· ∼ ·) := by
-  sorry
+  intro x y h
+  dsimp at *
+  addarith[h]
 
 example : Transitive (· ∼ ·) := by
-  sorry
+  intro x y z
+  intro h1 h2
+  dsimp at *
+  addarith[h1, h2]
 
 end
 
@@ -199,12 +237,40 @@ local infix:50 "∼" => fun ((a, b) : ℤ × ℤ) (c, d) ↦
   ∃ m n, m > 0 ∧ n > 0 ∧ m * b * (b ^ 2 - 3 * a ^ 2) = n * d * (d ^ 2 - 3 * c ^ 2)
 
 example : Reflexive (· ∼ ·) := by
-  sorry
+  intro x
+  dsimp
+  use 1, 1
+  constructor
+  numbers
+  constructor
+  numbers
+  ring
 
 example : Symmetric (· ∼ ·) := by
-  sorry
+  intro x y
+  intro h
+  obtain ⟨m, n, hm, hn, h⟩ := h
+  use n, m
+  constructor
+  assumption
+  constructor
+  assumption
+  rw[h]
 
 example : Transitive (· ∼ ·) := by
-  sorry
+  intro x y z
+  intro h1 h2
+  obtain ⟨m, n, hm, hn, h1⟩ := h1
+  obtain ⟨k, l, hk, hl, h2⟩ := h2
+  use k*m, l*n
+  constructor
+  exact Int.mul_pos hk hm
+  constructor
+  exact Int.mul_pos hl hn
+  calc k*m*x.2 * (x.2^2- 3*x.1^2) = k*(m*x.2*(x.2^2 - 3*x.1^2)) := by ring
+    _ = k*(n * y.2 * (y.2 ^ 2 - 3 * y.1 ^ 2)) := by rw[h1]
+    _ = n*(k * y.2 * (y.2 ^ 2 - 3 * y.1 ^ 2)) := by ring
+    _ = n*(l * z.2 * (z.2 ^ 2 - 3 * z.1 ^ 2)) := by rw[h2]
+    _ = l * n * z.2 * (z.2 ^ 2 - 3 * z.1 ^ 2) := by ring
 
 end

@@ -10,12 +10,12 @@ open Nat
 
 def pascal : ℕ → ℕ → ℕ
   | a, 0 => 1
-  | 0, b + 1 => 1
+  | 0, b+1 => 1
   | a + 1, b + 1 => pascal (a + 1) b + pascal a (b + 1)
 termination_by _ a b => a + b
 
 
-#eval pascal 2 4 -- infoview displays `15`
+#eval pascal 5 14 -- infoview displays `15`
 
 
 theorem pascal_le (a b : ℕ) : pascal a b ≤ (a + b)! := by
@@ -81,12 +81,25 @@ example (a b : ℕ) : (pascal a b : ℚ) = (a + b)! / (a ! * b !) := by
 
 theorem pascal_symm (m n : ℕ) : pascal m n = pascal n m := by
   match m, n with
-  | 0, 0 => sorry
-  | a + 1, 0 => sorry
-  | 0, b + 1 => sorry
-  | a + 1, b + 1 => sorry
+  | 0, 0 => rfl
+  | a + 1, 0 => rfl
+  | 0, b + 1 => rfl
+  | a + 1, b + 1 =>
+    calc pascal (a+1) (b+1)
+        = pascal (a + 1) b + pascal a (b + 1) := by rw[pascal]
+      _ = pascal b (a+1) + pascal (b+1) a := by rw[pascal_symm b (a+1), pascal_symm (b+1) a]
+      _ = pascal (b+1) a + pascal b (a+1) := by ring
+      _ = pascal (b+1) (a+1) := by rw[pascal]
+
 termination_by _ a b => a + b
 
 
 example (a : ℕ) : pascal a 1 = a + 1 := by
-  sorry
+  simple_induction a with k ih
+  .
+    rfl
+  .
+    calc pascal (k + 1) 1
+      _ = 1 + pascal k 1 := by rw[pascal, pascal]
+      _ = 1 + (k + 1) := by rw[ih]
+      _ = k + 1 + 1 := by ring
